@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from transforms import *
+from tf_albumentations.transforms import *
 
 _MAX_LEVEL = 10.
 
