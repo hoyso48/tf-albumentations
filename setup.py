@@ -7,6 +7,6 @@ setup(
     author='hoyso48',
     author_email='hoyeol0730@gmail.com',
     description='image augmentation library for tensorflow',
-    packages=find_packages(),    
+    packages=["tf_albumentations"],    
     install_requires=['tensorflow-addons >= 0.17.1'],
 )
