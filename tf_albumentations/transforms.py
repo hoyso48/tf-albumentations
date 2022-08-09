@@ -2,7 +2,7 @@ import tensorflow as tf
 import inspect
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
-import functional as F
+from tf_albumentations import functional as F
 
 def _apply_func_with_params(func, params, **kwargs):
   #set value None for function args not in kwargs
