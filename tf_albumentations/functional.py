@@ -298,7 +298,7 @@ def gaussian_noise(image, mean, std, per_channel=True):
     shape = tf.shape(image)
   else:
     shape = tf.concat(tf.shape(image)[:2], [1])
-  noise = tf.random.normal(shape, mean, std)
+  noise = tf.random.normal(shape, tf.cast(mean, tf.float32), tf.cast(std, tf.float32))
   image = tf.cast(tf.clip_by_value(tf.cast(image, tf.float32) + noise, 0, 255), image.dtype)
   return image
 
