@@ -39,7 +39,7 @@ def _parse_arg(param):
         param = tf.convert_to_tensor(param)
         selection = tf.random.uniform((), 0, len(param), tf.int32) 
         return param[selection]
-    elif isinstance(param, (int, float):
+    elif isinstance(param, (int, float)):
         return param
     elif param is None:
         return param
