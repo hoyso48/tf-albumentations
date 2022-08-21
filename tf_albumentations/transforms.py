@@ -338,7 +338,7 @@ class GaussianNoise(Transform):
         }
 
 class RGBJitter(Transform):
-    def __init__(self, p=0.5, shift_limit=(-0.2,0.2), scale_limit=(0.95,1.05)):
+    def __init__(self, p=0.5, shift_limit=(-0.2,0.2), scale_limit=(-0.05,0.05)):
         self.p = p
         self.shift_limit = shift_limit
         self.scale_limit = scale_limit
@@ -358,7 +358,7 @@ class RGBJitter(Transform):
         }
 
 class HSVJitter(Transform):
-    def __init__(self, p=0.5, shift_limit=(-0.2,0.2), scale_limit=(0.95,1.05)):
+    def __init__(self, p=0.5, shift_limit=(-0.2,0.2), scale_limit=(-0.05,0.05)):
         self.p = p
         self.shift_limit = shift_limit
         self.scale_limit = scale_limit
