@@ -274,7 +274,7 @@ def rgb_shift_scale(image, r_shift, g_shift, b_shift, r_scale, g_scale, b_scale)
   n_channels = tf.shape(image)[-1]
   tf.debugging.assert_equal(n_channels, 3)
   image = tf.cast(image, tf.float32)/255.
-  image = image * tf.convert_to_tensor([r_scale, g_scale, b_scale], dtype=tf.float32)
+  image = image * (1. + tf.convert_to_tensor([r_scale, g_scale, b_scale], dtype=tf.float32))
   image = image + tf.convert_to_tensor([r_shift, g_shift, b_shift], dtype=tf.float32)
   image = tf.clip_by_value(image, tf.constant(0, dtype=tf.float32), tf.constant(1, dtype=tf.float32))
   image = tf.cast(image * 255, dt)
@@ -286,7 +286,7 @@ def hsv_shift_scale(image, h_shift, s_shift, v_shift, h_scale, s_scale, v_scale)
   tf.debugging.assert_equal(n_channels, 3)
   image = tf.cast(image, tf.float32)/255.
   image = tf.image.rgb_to_hsv(image)
-  image = image * tf.convert_to_tensor([h_scale, s_scale, v_scale], dtype=tf.float32)
+  image = image * (1. + tf.convert_to_tensor([h_scale, s_scale, v_scale], dtype=tf.float32))
   image = image + tf.convert_to_tensor([h_shift, s_shift, v_shift], dtype=tf.float32)
   image = tf.clip_by_value(image, tf.constant(0, dtype=tf.float32), tf.constant(1, dtype=tf.float32))
   image = tf.image.hsv_to_rgb(image)
