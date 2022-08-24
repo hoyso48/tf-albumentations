@@ -66,8 +66,9 @@ def tf_random_choice(a, size, replace=True, p=None):
     return idxs
 
 class Transform:
-    def __init__(self):
+    def __init__(self, debug=False):
         self.p = 0
+        self.debug = debug
     def apply(self):
         return
     def get_params(self):
@@ -79,9 +80,16 @@ class Transform:
         elif self.p == 1:
             return _apply_func_with_params(self.apply, params, **kwargs)
         else:
-            if tf.random.uniform(()) < self.p:
+            p = tf.random.uniform(())
+            if p < self.p:
+                if self.debug:
+                  print()
+                  print(self, f'applied with prob {p} < {self.p}')
                 return _apply_func_with_params(self.apply, params, **kwargs)
             else:
+                if self.debug:
+                  print()
+                  print(self, f'skipped with prob {p} >= {self.p}')
                 return kwargs
 
 class NoOp(Transform):
