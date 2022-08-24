@@ -136,7 +136,7 @@ class Sequence(Transform):
             return kwargs
         else:
             if tf.random.uniform(()) < self.p:
-                for f in [x.__call__ for x in self.transforms]:
+                for f in self.transforms:
                     kwargs = f(**kwargs)
             return kwargs
 
