@@ -66,8 +66,8 @@ def tf_random_choice(a, size, replace=True, p=None):
     return idxs
 
 class Transform:
-    def __init__(self, debug=False):
-        self.p = 0
+    def __init__(self, p=0, debug=False):
+        self.p = p
         self.debug = debug
     def apply(self):
         return
