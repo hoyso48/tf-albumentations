@@ -456,38 +456,46 @@ def shear_y(image, mask, objects, level, replace=0):
     objects = B.shear_bboxes(objects, level, 0)
   return image, mask, objects
 
-def scale(image, mask, objects, scale, replace=0):
-  #scale(zoom-in, zoom-out) image with scale while maintaining aspect ratio
+def scale_preserved(image, mask, objects, scale, centered=False, replace=0):
   image_shape = tf.shape(image)
-  mask_shape = tf.shape(mask)
   image_height = tf.shape(image)[0]
   image_width = tf.shape(image)[1]
-
   resize_h = tf.cast(tf.cast(image_height, tf.float32)*scale, tf.int32)
   resize_w = tf.cast(tf.cast(image_width, tf.float32)*scale, tf.int32)
-  offset_y = tf.random.uniform((),0,tf.abs(image_height-resize_h),tf.int32)
-  offset_x = tf.random.uniform((),0,tf.abs(image_width-resize_w), tf.int32)
-  image = tf.cast(tf.image.resize(image, [resize_h, resize_w], method=_IMAGE_INTERPOLATION), image.dtype)
-  pad = [[offset_y,image_height-offset_y-resize_h],[offset_x,image_width-offset_x-resize_w],[0,0]]
-#   if mask is not None:
-#     mask = tf.cast(tf.image.resize(mask, [resize_h, resize_w], 'nearest'), mask.dtype)
-  
-  if scale > 1:
-    image = tf.slice(image, [offset_y,offset_x,0], [image_height,image_width,-1])
-  else:
-    image = tf.pad(wrap(image), pad)
-    image = unwrap(image, replace)
-    image = tf.reshape(image, image_shape)
-  if mask is not None:
-    mask = tf.cast(tf.image.resize(mask, [resize_h, resize_w], method=_MASK_INTERPOLATION), mask.dtype)
-    if scale > 1:
-      mask = tf.slice(mask, [offset_y,offset_x,0], [image_height,image_width,-1])
+  if scale != 1:
+    image = tf.cast(tf.image.resize(image, [resize_h, resize_w], method=_IMAGE_INTERPOLATION), image.dtype)
+    if not centered:
+      offset_x = tf.random.uniform((),-tf.abs(resize_h-image_height)//2,tf.abs(resize_h-image_height)//2, tf.int32)
+      offset_y = tf.random.uniform((),-tf.abs(resize_w-image_width)//2,tf.abs(resize_w-image_width)//2, tf.int32)
     else:
-      mask = tf.pad(mask, pad)
-    mask = tf.reshape(mask, mask_shape)
+      offset_x = 0
+      offset_y = 0
+    if scale < 1:
+      image = F.wrap(image)
+      image = tf.image.resize_with_crop_or_pad(image, image_height, image_width)
+      image = image_ops.translate(image, [offset_x, offset_y])
+      image = F.unwrap(image, replace)
+    else:
+      image = image_ops.translate(image, [offset_x, offset_y])
+      image = tf.image.resize_with_crop_or_pad(image, image_height, image_width)
+  else:
+    offset_x = 0
+    offset_y = 0
+  if mask is not None:
+    if scale != 1:
+      mask = tf.cast(tf.image.resize(mask, [resize_h, resize_w], method=_MASK_INTERPOLATION), mask.dtype)
+      if scale < 1:
+        mask = tf.image.resize_with_crop_or_pad(mask, image_height, image_width)
+        mask = image_ops.translate(mask, [offset_x, offset_y])
+      else:
+        mask = image_ops.translate(mask, [offset_x, offset_y])
+        mask = tf.image.resize_with_crop_or_pad(mask, image_height, image_width)
   if objects is not None:
-    objects = B.scale_bboxes(objects, scale, scale, offset_y/image_height, offset_x/image_width)
+      box_offset_y = (tf.abs(resize_h-image_height)//2-offset_y)/image_height
+      box_offset_x = (tf.abs(resize_w-image_width)//2-offset_x)/image_width
+      objects = B.scale_bboxes(objects, scale, scale, box_offset_y, box_offset_x)
   return image, mask, objects
+
 
 def flip_left_right(image, mask, objects):
   image = tf.image.flip_left_right(image)
