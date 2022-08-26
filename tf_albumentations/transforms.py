@@ -409,21 +409,23 @@ class VerticalFlip(Transform):
         return {}
 
 class Scale(Transform):
-    def __init__(self, p=0.5, scale=(0.7,1.3), replace=0):
+    def __init__(self, p=0.5, scale=(0.7,1.3), centered=False, replace=0):
         self.p = p
         self.scale = scale
+        self.centered = centered
         self.replace = replace
 
-    def apply(self, image, mask, objects, scale, replace):
-        image, mask, objects = F.scale(image, mask, objects, scale, replace)
+    def apply(self, image, mask, objects, scale, centered, replace):
+        image, mask, objects = F.scale_preserved(image, mask, objects, scale, centered, replace)
         return {'image':image, 'mask':mask, 'objects':objects}
 
     def get_params(self):
         return {
             'scale':_parse_arg(self.scale),
+            'centered':self.centered,
             'replace':self.replace
         }
-
+      
 class Rotate(Transform):
     def __init__(self, p=0.5, degrees=(-30,30), replace=0):
         self.p = p
