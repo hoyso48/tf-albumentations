@@ -32,7 +32,7 @@ def _parse_arg(param, log_scale=False):
     #if param is const, return itself
     if isinstance(param, tuple):
         assert len(param)==2
-        param = tf.convert_to_tensor(param)
+        param = tf.convert_to_tensor(param, dtype=tf.float32)
         if log_scale:
           tf.debugging.assert_greater(param[0],0)
           tf.debugging.assert_greater(param[1],0)
