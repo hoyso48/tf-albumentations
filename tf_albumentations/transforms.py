@@ -26,14 +26,20 @@ def _apply_func_with_params(func, params, **kwargs):
         output_dict[key] = output[key]
   return output_dict
 
-def _parse_arg(param):
+def _parse_arg(param, log_scale=False):
     #if param is tuple of length 2, return random value in between
     #if param is list, return random element of the list
     #if param is const, return itself
     if isinstance(param, tuple):
         assert len(param)==2
         param = tf.convert_to_tensor(param)
-        return tf.random.uniform((), param[0], param[1], param.dtype)
+        if log_scale:
+          tf.debugging.assert_greater(param[0],0)
+          tf.debugging.assert_greater(param[1],0)
+          p = tf.random.uniform((), tf.math.log(param[0]), tf.math.log(param[1]), tf.float32)
+          return tf.exp(p)
+        else:
+          return tf.random.uniform((), param[0], param[1], tf.float32)
     elif isinstance(param, list):
         assert len(param)>0
         param = tf.convert_to_tensor(param)
