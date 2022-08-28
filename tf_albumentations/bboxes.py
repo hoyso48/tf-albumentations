@@ -115,10 +115,8 @@ def flip_left_right_bboxes(objects):
 
 def scale_bboxes(objects, scale_y, scale_x, offset_y, offset_x, _filter=_FILTER_BBOXES):
     bboxes = objects.copy()
-    sign_x = tf.cast(1 if scale_x < 1 else -1, offset_x.dtype)
-    sign_y = tf.cast(1 if scale_y < 1 else -1, offset_y.dtype)
     bboxes['bbox'] = bboxes['bbox'] * [scale_y, scale_x, scale_y, scale_x] 
-    bboxes['bbox'] = bboxes['bbox'] + [sign_y*offset_y, sign_x*offset_x, sign_y*offset_y, sign_x*offset_x]
+    bboxes['bbox'] = bboxes['bbox'] + [offset_y, offset_x, offset_y, offset_x]
     if _filter:
         return filter_objects_by_area(bboxes, 0)
     else: return bboxes
