@@ -413,24 +413,6 @@ class VerticalFlip(Transform):
 
     def get_params(self):
         return {}
-
-class Scale(Transform):
-    def __init__(self, p=0.5, scale=(0.7,1.3), centered=False, replace=0):
-        self.p = p
-        self.scale = scale
-        self.centered = centered
-        self.replace = replace
-
-    def apply(self, image, mask, objects, scale, centered, replace):
-        image, mask, objects = F.scale_preserved(image, mask, objects, scale, centered, replace)
-        return {'image':image, 'mask':mask, 'objects':objects}
-
-    def get_params(self):
-        return {
-            'scale':_parse_arg(self.scale),
-            'centered':self.centered,
-            'replace':self.replace
-        }
       
 class Rotate(Transform):
     def __init__(self, p=0.5, degrees=(-30,30), replace=0):
@@ -511,9 +493,27 @@ class TranslateY(Transform):
             'level':_parse_arg(self.level),
             'replace':self.replace
         }
+      
+# class Scale(Transform):
+#     def __init__(self, p=0.5, scale=(0.7,1.3), centered=False, replace=0):
+#         self.p = p
+#         self.scale = scale
+#         self.centered = centered
+#         self.replace = replace
 
+#     def apply(self, image, mask, objects, scale, centered, replace):
+#         image, mask, objects = F.scale_preserved(image, mask, objects, scale, centered, replace)
+#         return {'image':image, 'mask':mask, 'objects':objects}
+
+#     def get_params(self):
+#         return {
+#             'scale':_parse_arg(self.scale),
+#             'centered':self.centered,
+#             'replace':self.replace
+#         }
+      
 class Scale(Transform):
-    def __init__(self, p=0.5, scale=(0.7,1.33333), aspect_ratio=(0.7,1.33333), centered=False, crop_size=None, output_size=None, replace=0):
+    def __init__(self, p=0.5, scale=(0.7,1.33), aspect_ratio=(0.7,1.33), centered=False, crop_size=None, output_size=None, replace=0):
         self.p = p
         self.scale = scale
         self.crop_size = crop_size
@@ -528,8 +528,8 @@ class Scale(Transform):
 
     def get_params(self):
         return {
-            'scale':A._parse_arg(self.scale),
-            'aspect_ratio':A._parse_arg(self.aspect_ratio),
+            'scale':_parse_arg(self.scale),
+            'aspect_ratio':_parse_arg(self.aspect_ratio),
             'centered':self.centered,
             'output_size':self.output_size,
             'crop_size':self.crop_size,
