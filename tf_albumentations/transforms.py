@@ -51,8 +51,8 @@ def _parse_arg(param, log_scale=False):
         return param
     else: raise ValueError
 
-def tf_random_choice(a, size, replace=True, p=None):
-    if replace:
+def tf_random_choice(a, size, with_replacement=True, p=None):
+    if with_replacement:
         if p is None:
             idxs = tf.random.uniform((size,), 0, len(a), dtype=tf.int32)
         else:
@@ -106,19 +106,19 @@ class NoOp(Transform):
         return kwargs
 
 class Choice(Transform):
-    def __init__(self, transforms:List[Transform], p=1, n=1, sample_weights=None, replace=False, remain_order=False):
+    def __init__(self, transforms:List[Transform], p=1, n=1, sample_weights=None, with_replacement=False, remain_order=False):
         self.transforms = transforms
         self.p = p
         self.n = n
         self.sample_weights = sample_weights
-        self.replace = replace
+        self.with_replacement = with_replacement
         self.remain_order = remain_order
 
     def __call__(self, **kwargs):
         if (self.p == 0) or (len(self.transforms)==0):
             return kwargs
         else:
-            idxs = tf_random_choice(tf.range(len(self.transforms)), self.n, self.replace, self.sample_weights)
+            idxs = tf_random_choice(tf.range(len(self.transforms)), self.n, self.with_replacement, self.sample_weights)
             if tf.random.uniform(()) < self.p:
                 if self.remain_order:
                     idxs = tf.sort(idxs)
@@ -352,11 +352,31 @@ class GaussianNoise(Transform):
             'std':_parse_arg(self.std)
         }
 
-class RGBJitter(Transform):
-    def __init__(self, p=0.5, shift_limit=(-0.2,0.2), scale_limit=(-0.05,0.05)):
+class GaussianBlur(Transform):
+    def __init__(self, p=0.5, kernel_size=[3,5,7], sigma=0):
         self.p = p
-        self.shift_limit = shift_limit
-        self.scale_limit = scale_limit
+        self.kernel_size = kernel_size
+        self.sigma = sigma
+
+    def apply(self, image, kernel_size, sigma):
+        image = F.gaussian_blur(image, kernel_size, sigma, padding='SAME')
+        return {'image': image}
+
+    def get_params(self):
+        return {
+            'kernel_size':_parse_arg(self.kernel_size),
+            'sigma':_parse_arg(self.sigma)
+        }
+      
+class RGBJitter(Transform):
+    def __init__(self, p=0.5, r_shift=(-0.2,0.2), g_shift=(-0.2,0.2), b_shift=(-0.2,0.2), r_scale=(-0.05,0.05), g_scale=(-0.05,0.05), b_scale=(-0.05,0.05)):
+        self.p = p
+        self.r_shift=r_shift
+        self.g_shift=g_shift
+        self.b_shift=b_shift
+        self.r_scale=r_scale
+        self.g_scale=g_scale
+        self.b_scale=b_scale
 
     def apply(self, image, r_shift, g_shift, b_shift, r_scale, g_scale, b_scale):
         image = F.rgb_shift_scale(image, r_shift, g_shift, b_shift, r_scale, g_scale, b_scale)
@@ -364,19 +384,23 @@ class RGBJitter(Transform):
 
     def get_params(self):
         return {
-            'r_shift':_parse_arg(self.shift_limit),
-            'g_shift':_parse_arg(self.shift_limit),
-            'b_shift':_parse_arg(self.shift_limit),
-            'r_scale':_parse_arg(self.scale_limit),
-            'g_scale':_parse_arg(self.scale_limit),
-            'b_scale':_parse_arg(self.scale_limit),
+            'r_shift':_parse_arg(self.r_shift),
+            'g_shift':_parse_arg(self.g_shift),
+            'b_shift':_parse_arg(self.b_shift),
+            'r_scale':_parse_arg(self.r_scale),
+            'g_scale':_parse_arg(self.g_scale),
+            'b_scale':_parse_arg(self.b_scale),
         }
 
 class HSVJitter(Transform):
-    def __init__(self, p=0.5, shift_limit=(-0.2,0.2), scale_limit=(-0.05,0.05)):
+    def __init__(self, p=0.5, h_shift=(-0.2,0.2), s_shift=(-0.2,0.2), v_shift=(-0.2,0.2), h_scale=(-0.05,0.05), s_scale=(-0.05,0.05), v_scale=(-0.05,0.05)):
         self.p = p
-        self.shift_limit = shift_limit
-        self.scale_limit = scale_limit
+        self.h_shift=h_shift
+        self.s_shift=s_shift
+        self.v_shift=v_shift
+        self.h_scale=h_scale
+        self.s_scale=s_scale
+        self.v_scale=v_scale
 
     def apply(self, image, h_shift, s_shift, v_shift, h_scale, s_scale, v_scale):
         image = F.hsv_shift_scale(image, h_shift, s_shift, v_shift, h_scale, s_scale, v_scale)
@@ -384,12 +408,12 @@ class HSVJitter(Transform):
 
     def get_params(self):
         return {
-            'h_shift':_parse_arg(self.shift_limit),
-            's_shift':_parse_arg(self.shift_limit),
-            'v_shift':_parse_arg(self.shift_limit),
-            'h_scale':_parse_arg(self.scale_limit),
-            's_scale':_parse_arg(self.scale_limit),
-            'v_scale':_parse_arg(self.scale_limit),
+            'h_shift':_parse_arg(self.h_shift),
+            's_shift':_parse_arg(self.s_shift),
+            'v_shift':_parse_arg(self.v_shift),
+            'h_scale':_parse_arg(self.h_scale),
+            's_scale':_parse_arg(self.s_scale),
+            'v_scale':_parse_arg(self.v_scale),
         }
 
 class HorizontalFlip(Transform):
@@ -619,10 +643,10 @@ def Translate(p=0.5, level=(-0.3,0.3), replace=0):
 def Shear(p=0.5, level=(-0.3,0.3), replace=0):
   return Choice([ShearY(p=1, level=level, replace=replace), ShearX(p=1, level=level, replace=replace)], p=p, n=1)
 
-def ColorJitter(p=0.5, brightness=0.2, contrast=0.2, saturation=0.2, hue=0.05):
+def ColorJitter(p=0.5, hue=(0.95,1.05), brightness=(0.8,1.2), saturation=(0.7,1.3), contrast=(0.8,1.2)):
   return Choice([
-                 Brightness(p=1, factor=(1-brightness,1+brightness)),
-                 Contrast(p=1, factor=(1-contrast,1+contrast)),
-                 Saturation(p=1, factor=(1-saturation,1+saturation)),
-                 Hue(p=1, delta=(1-hue,1+hue))
-                 ], p=p, n=4, replace=False)
+                 Hue(p=1, delta=hue),
+                 Brightness(p=1, factor=brightness),
+                 Saturation(p=1, factor=saturation),
+                 Contrast(p=1, factor=contrast),
+                 ], p=p, n=4, with_replacement=False)
