@@ -618,3 +618,11 @@ def Translate(p=0.5, level=(-0.3,0.3), replace=0):
 
 def Shear(p=0.5, level=(-0.3,0.3), replace=0):
   return Choice([ShearY(p=1, level=level, replace=replace), ShearX(p=1, level=level, replace=replace)], p=p, n=1)
+
+def ColorJitter(p=0.5, brightness=0.2, contrast=0.2, saturation=0.2, hue=0.05):
+  return Choice([
+                 Brightness(p=1, factor=(1-brightness,1+brightness)),
+                 Contrast(p=1, factor=(1-contrast,1+contrast)),
+                 Saturation(p=1, factor=(1-saturation,1+saturation)),
+                 Hue(p=1, delta=(1-hue,1+hue))
+                 ], p=p, n=4, replace=False)
