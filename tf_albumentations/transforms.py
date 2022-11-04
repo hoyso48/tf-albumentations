@@ -650,3 +650,7 @@ def ColorJitter(p=0.5, hue=(-0.05,0.05), brightness=(0.8,1.2), saturation=(0.7,1
                  Saturation(p=1, factor=saturation),
                  Contrast(p=1, factor=contrast),
                  ], p=p, n=4, with_replacement=False)
+
+# def ShiftScaleRotate(p=0.5, shift=(-0.0625, 0.0625), scale=(0.9,1.1), rotate=(-0.45,0.45), replace=0):
+#   if isinstance(scale, tuple):
+    
