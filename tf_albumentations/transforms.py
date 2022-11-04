@@ -611,3 +611,10 @@ class ElasticTransform(Transform):
                 'replace':self.replace,
                 'border_mode':self.border_mode,
             }
+
+#composite ops
+def Translate(p=0.5, level=(-0.3,0.3), replace=0):
+  return Choice([TranslateY(p=1, level=level, replace=replace), TranslateX(p=1, level=level, replace=replace)], p=p, n=1)
+
+def Shear(p=0.5, level=(-0.3,0.3), replace=0):
+  return Choice([ShearY(p=1, level=level, replace=replace), ShearX(p=1, level=level, replace=replace)], p=p, n=1)
