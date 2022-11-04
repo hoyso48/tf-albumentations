@@ -171,18 +171,19 @@ def autocontrast(image):
 
     # Scale the image, making the lowest value 0 and the highest value 255.
     def scale_values(im):
+      dt = im.dtype
       scale = 255.0 / (hi - lo)
       offset = -lo * scale
       im = tf.cast(im, tf.float32) * scale + offset
       im = tf.clip_by_value(im, 0.0, 255.0)
-      return tf.cast(im, tf.uint8)
+      return tf.cast(im, dt)
 
     result = tf.cond(hi > lo, lambda: scale_values(image), lambda: image)
     return result
 
   # Assumes RGB for now.  Scales each channel independently
   # and then stacks the result.
-  image = tf.transpose(tf.map_fn(scale_channel, tf.transpose(image, [2,0,1], image.dtype)), [1,2,0])
+  image = tf.transpose(tf.map_fn(scale_channel, tf.transpose(image, [2,0,1]), image.dtype), [1,2,0])
   return image
 
 def sharpness(image, factor):
@@ -202,7 +203,7 @@ def sharpness(image, factor):
   degenerate = tf.nn.depthwise_conv2d(
       image, kernel, strides, padding='VALID')
   degenerate = tf.clip_by_value(degenerate, 0.0, 255.0)
-  degenerate = tf.squeeze(tf.cast(degenerate, tf.uint8), [0])
+  degenerate = tf.squeeze(tf.cast(degenerate, orig_image.dtype), [0])
 
   # For the borders of the resulting image, fill in the values of the
   # original image.
@@ -220,6 +221,7 @@ def equalize(image):
   def scale_channel(im):
     """Scale the data in the channel to implement equalize."""
     # Compute the histogram of the image channel.
+    dt = im.dtype
     im = tf.cast(im, tf.int32)
     histo = tf.histogram_fixed_width(im, [0, 255], nbins=256)
 
@@ -244,11 +246,11 @@ def equalize(image):
                      lambda: im,
                      lambda: tf.gather(build_lut(histo, step), im))
 
-    return tf.cast(result, tf.uint8)
+    return tf.cast(result, dt)
 
   # Assumes RGB for now.  Scales each channel independently
   # and then stacks the result.
-  image = tf.transpose(tf.map_fn(scale_channel, tf.transpose(image, [2,0,1], image.dtype)), [1,2,0])
+  image = tf.transpose(tf.map_fn(scale_channel, tf.transpose(image, [2,0,1]), image.dtype), [1,2,0])
   return image
 
 def invert(image):
@@ -457,6 +459,7 @@ def shear_y(image, mask, objects, level, replace=0):
   return image, mask, objects
 
 def scale_preserved(image, mask, objects, scale, centered=False, replace=0):
+  #adjust scale while preserving aspect ratio
   image_shape = tf.shape(image)
   image_height = tf.shape(image)[0]
   image_width = tf.shape(image)[1]
