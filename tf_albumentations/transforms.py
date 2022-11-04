@@ -106,7 +106,7 @@ class NoOp(Transform):
         return kwargs
 
 class Choice(Transform):
-    def __init__(self, transforms:List[Transform], p=1, n=1, sample_weights=None, replace=True, remain_order=False):
+    def __init__(self, transforms:List[Transform], p=1, n=1, sample_weights=None, replace=False, remain_order=False):
         self.transforms = transforms
         self.p = p
         self.n = n
