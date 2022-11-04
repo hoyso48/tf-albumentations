@@ -469,7 +469,7 @@ def shear_y(image, mask, objects, level, replace=0):
 #   offset_limit_y = tf.abs(resize_h-image_height)//2
 #   if scale != 1:
 #     image = tf.cast(tf.image.resize(image, [resize_h, resize_w], method=_IMAGE_INTERPOLATION), image.dtype)
-#     image = F.wrap(image)
+#     image = wrap(image)
 #     if not centered:
 #       offset_x = tf.random.uniform((),-offset_limit_x,offset_limit_x+1, tf.int32)
 #       offset_y = tf.random.uniform((),-offset_limit_y,offset_limit_y+1, tf.int32)
@@ -482,7 +482,7 @@ def shear_y(image, mask, objects, level, replace=0):
 #     else:
 #       image = image_ops.translate(image, [offset_x, offset_y])
 #       image = tf.image.resize_with_crop_or_pad(image, image_height, image_width)
-#     image = F.unwrap(image, replace)
+#     image = unwrap(image, replace)
 #   else:
 #     offset_x = 0
 #     offset_y = 0
@@ -576,13 +576,13 @@ def scale_(image, mask=None, objects=None,
     else:
         offset_y = tf.random.uniform((),1-scale_y,0,tf.float32)
 
-  image = F.wrap(image)
+  image = wrap(image)
   image = scale_image(image, scale_y, scale_x, offset_y, offset_x)
-  image = tf.cast(tf.image.resize(image, [output_height, output_width], method=F._IMAGE_INTERPOLATION), image.dtype)
-  image = F.unwrap(image, replace)
+  image = tf.cast(tf.image.resize(image, [output_height, output_width], method=_IMAGE_INTERPOLATION), image.dtype)
+  image = unwrap(image, replace)
   if mask is not None:
     mask = scale_image(mask, scale_y, scale_x, offset_y, offset_x)
-    mask = tf.cast(tf.image.resize(mask, [output_height, output_width], method=F._MASK_INTERPOLATION), mask.dtype)
+    mask = tf.cast(tf.image.resize(mask, [output_height, output_width], method=_MASK_INTERPOLATION), mask.dtype)
   if objects is not None:
     objects = scale_bboxes(objects, scale_y, scale_x, offset_y, offset_x)
   return image, mask, objects
