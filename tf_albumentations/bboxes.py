@@ -113,14 +113,23 @@ def flip_left_right_bboxes(objects):
     bboxes['bbox'] = tf.stack([y1, 1-x2, y2, 1-x1],axis=-1)
     return bboxes
 
+# def scale_bboxes(objects, scale_y, scale_x, offset_y, offset_x, _filter=_FILTER_BBOXES):
+#     bboxes = objects.copy()
+#     bboxes['bbox'] = bboxes['bbox'] * [scale_y, scale_x, scale_y, scale_x] 
+#     bboxes['bbox'] = bboxes['bbox'] + [offset_y, offset_x, offset_y, offset_x]
+#     if _filter:
+#         return filter_objects_by_area(bboxes, 0)
+#     else: return bboxes
+    
 def scale_bboxes(objects, scale_y, scale_x, offset_y, offset_x, _filter=_FILTER_BBOXES):
     bboxes = objects.copy()
-    bboxes['bbox'] = bboxes['bbox'] * [scale_y, scale_x, scale_y, scale_x] 
-    bboxes['bbox'] = bboxes['bbox'] + [offset_y, offset_x, offset_y, offset_x]
+    bboxes['bbox'] = bboxes['bbox'] - [offset_y, offset_x, offset_y, offset_x]
+    bboxes['bbox'] = bboxes['bbox'] / [scale_y, scale_x, scale_y, scale_x] 
+    
     if _filter:
         return filter_objects_by_area(bboxes, 0)
     else: return bboxes
-
+    
 def translate_bboxes(objects, translate_y, translate_x, _filter=_FILTER_BBOXES):
     bboxes = objects.copy()
     bboxes['bbox'] = bboxes['bbox'] - [translate_y,translate_x,translate_y,translate_x]
