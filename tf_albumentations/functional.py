@@ -183,7 +183,7 @@ def autocontrast(image):
 
   # Assumes RGB for now.  Scales each channel independently
   # and then stacks the result.
-  image = tf.transpose(tf.map_fn(scale_channel, tf.transpose(image, [2,0,1]), image.dtype), [1,2,0])
+  image = tf.transpose(tf.map_fn(scale_channel, tf.transpose(image, [2,0,1])), [1,2,0])
   return image
 
 def sharpness(image, factor):
@@ -250,7 +250,7 @@ def equalize(image):
 
   # Assumes RGB for now.  Scales each channel independently
   # and then stacks the result.
-  image = tf.transpose(tf.map_fn(scale_channel, tf.transpose(image, [2,0,1]), image.dtype), [1,2,0])
+  image = tf.transpose(tf.map_fn(scale_channel, tf.transpose(image, [2,0,1])), [1,2,0])
   return image
 
 def invert(image):
