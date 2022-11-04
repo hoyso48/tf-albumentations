@@ -311,7 +311,46 @@ def channel_shuffle(image):
   image = shuffled_image
   return image
 
-
+def gaussian_blur(image, kernel_size, sigma=0, padding='SAME'):
+  """Blurs the given image with separable convolution.
+  Args:
+    image: Tensor of shape [height, width, channels] and dtype float to blur.
+    kernel_size: Integer Tensor for the size of the blur kernel. This is should
+      be an odd number. If it is an even number, the actual kernel size will be
+      size + 1.
+    sigma: Sigma value for gaussian operator.
+    padding: Padding to use for the convolution. Typically 'SAME' or 'VALID'.
+  Returns:
+    A Tensor representing the blurred image.
+  """
+  dt = image.dtype
+  image = tf.cast(image, tf.float32)
+  radius = tf.cast(kernel_size / 2, dtype=tf.int32)
+  kernel_size = radius * 2 + 1
+  if sigma == 0:
+    sigma = 0.3*((tf.cast(kernel_size, tf.float32)-1)*0.5 - 1) + 0.8
+  x = tf.cast(tf.range(-radius, radius + 1), dtype=tf.float32)
+  blur_filter = tf.exp(-tf.pow(x, 2.0) /
+                       (2.0 * tf.pow(tf.cast(sigma, dtype=tf.float32), 2.0)))
+  blur_filter /= tf.reduce_sum(blur_filter)
+  # One vertical and one horizontal filter.
+  blur_v = tf.reshape(blur_filter, [kernel_size, 1, 1, 1])
+  blur_h = tf.reshape(blur_filter, [1, kernel_size, 1, 1])
+  num_channels = tf.shape(image)[-1]
+  blur_h = tf.tile(blur_h, [1, 1, num_channels, 1])
+  blur_v = tf.tile(blur_v, [1, 1, num_channels, 1])
+  expand_batch_dim = image.shape.ndims == 3
+  if expand_batch_dim:
+    # Tensorflow requires batched input to convolutions, which we can fake with
+    # an extra dimension.
+    image = tf.expand_dims(image, axis=0)
+  blurred = tf.nn.depthwise_conv2d(
+      image, blur_h, strides=[1, 1, 1, 1], padding=padding)
+  blurred = tf.nn.depthwise_conv2d(
+      blurred, blur_v, strides=[1, 1, 1, 1], padding=padding)
+  if expand_batch_dim:
+    blurred = tf.squeeze(blurred, axis=0)
+  return tf.cast(blurred, dt)
 
 
 ################################
