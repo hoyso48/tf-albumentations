@@ -123,13 +123,15 @@ class Choice(Transform):
                 if self.remain_order:
                     idxs = tf.sort(idxs)
                 for k in range(self.n):
-                    for (i, func) in enumerate([x.__call__ for x in self.transforms]):
-                        # if i==idxs[k]:
-                        #     print('selects', i)
-                        kwargs = tf.cond(
-                            tf.equal(i, idxs[k]),
-                            lambda selected_func=func, selected_args=kwargs: selected_func(**selected_args),
-                            lambda: kwargs)
+                    fns = [lambda:f.__call__(**kwargs) for f in self.transforms]
+                    kwargs = tf.switch_case(idxs[k], fns, default=lambda:kwargs)
+                    # for (i, func) in enumerate([x.__call__ for x in self.transforms]):
+                    #     # if i==idxs[k]:
+                    #     #     print('selects', i)
+                    #     kwargs = tf.cond(
+                    #         tf.equal(i, idxs[k]),
+                    #         lambda selected_func=func, selected_args=kwargs: selected_func(**selected_args),
+                    #         lambda: kwargs)
             return kwargs
 
 class Sequence(Transform):
