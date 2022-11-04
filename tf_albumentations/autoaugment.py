@@ -138,4 +138,4 @@ def RandAugment(available_ops=available_ops, magnitude=10, n_layers=2, config=co
     args = level_to_arg(config)[subpolicy](level=magnitude)
     op = eval(subpolicy)(p=1, **args)
     POLICY.append(op)
-  return Sequence([HorizontalFlip(p=0.5), Choice(POLICY, p=1, n=n_layers, replace=True)])
+  return Sequence([HorizontalFlip(p=0.5), Choice(POLICY, p=1, n=n_layers, with_replacement=True)])
