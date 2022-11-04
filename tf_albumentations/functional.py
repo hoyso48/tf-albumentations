@@ -584,7 +584,7 @@ def scale_(image, mask=None, objects=None,
     mask = scale_image(mask, scale_y, scale_x, offset_y, offset_x)
     mask = tf.cast(tf.image.resize(mask, [output_height, output_width], method=_MASK_INTERPOLATION), mask.dtype)
   if objects is not None:
-    objects = scale_bboxes(objects, scale_y, scale_x, offset_y, offset_x)
+    objects = B.scale_bboxes(objects, scale_y, scale_x, offset_y, offset_x)
   return image, mask, objects
 
 def flip_left_right(image, mask, objects):
