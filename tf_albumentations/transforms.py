@@ -512,6 +512,30 @@ class TranslateY(Transform):
             'replace':self.replace
         }
 
+class Scale(Transform):
+    def __init__(self, p=0.5, scale=(0.7,1.33333), aspect_ratio=(0.7,1.33333), centered=False, crop_size=None, output_size=None, replace=0):
+        self.p = p
+        self.scale = scale
+        self.crop_size = crop_size
+        self.output_size = output_size
+        self.aspect_ratio = aspect_ratio
+        self.centered = centered
+        self.replace = replace
+
+    def apply(self, image, mask, objects, scale, aspect_ratio, centered, crop_size, output_size, replace):
+        image, mask, objects = F.scale_(image, mask, objects, scale, aspect_ratio, centered, crop_size, output_size, replace)
+        return {'image':image, 'mask':mask, 'objects':objects}
+
+    def get_params(self):
+        return {
+            'scale':A._parse_arg(self.scale),
+            'aspect_ratio':A._parse_arg(self.aspect_ratio),
+            'centered':self.centered,
+            'output_size':self.output_size,
+            'crop_size':self.crop_size,
+            'replace':self.replace
+        }
+      
 class Cutout(Transform):
     def __init__(self, p=0.5, size=100, replace=0):
         self.p = p
