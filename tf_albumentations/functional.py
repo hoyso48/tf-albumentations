@@ -359,7 +359,7 @@ def gaussian_blur(image, kernel_size, sigma=0, padding='SAME'):
 
 def cutout(image, mask, objects, pad_size, replace=0):
   """Apply cutout (https://arxiv.org/abs/1708.04552) to image.
-  This operation applies a (2*pad_size x 2*pad_size) mask of zeros to
+  This operation applies a (pad_size x pad_size) mask of zeros to
   a random location within `img`. The pixel values filled in will be of the
   value `replace`. The located where the mask will be applied is randomly
   chosen uniformly over the whole image.
@@ -367,14 +367,19 @@ def cutout(image, mask, objects, pad_size, replace=0):
     image: An image Tensor of type uint8.
     pad_size: Specifies how big the zero mask that will be generated is that
       is applied to the image. The mask will be of size
-      (2*pad_size x 2*pad_size).
+      (pad_size x pad_size).
     replace: What pixel value to fill in the image in the area that has
       the cutout mask applied to it.
   Returns:
     An image Tensor that is of type uint8.
   """
+  
   image_height = tf.shape(image)[0]
   image_width = tf.shape(image)[1]
+  
+  pad_size = tf.cond(pad_size < 1: lambda:tf.math.sqrt(tf.cast(image_height*image_width,tf.float32))*tf.cast(pad_size,tf.float32), lambda:pad_size)
+  pad_size = tf.cast(pad_size, tf.int32)//2
+  
   # Sample the center location in the image where the zero mask will be applied.
   cutout_center_height = tf.random.uniform(
       shape=[], minval=0, maxval=image_height,
