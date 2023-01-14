@@ -377,7 +377,7 @@ def cutout(image, mask, objects, pad_size, replace=0):
   image_height = tf.shape(image)[0]
   image_width = tf.shape(image)[1]
   
-  pad_size = tf.cond(pad_size < 1, lambda:tf.math.sqrt(tf.cast(image_height*image_width,tf.float32))*tf.cast(pad_size,tf.float32), lambda:pad_size)
+  pad_size = tf.cond(tf.cast(pad_size, tf.float32) < 1., lambda:tf.math.sqrt(tf.cast(image_height*image_width,tf.float32))*tf.cast(pad_size,tf.float32), lambda:pad_size)
   pad_size = tf.cast(pad_size, tf.int32)//2
   
   # Sample the center location in the image where the zero mask will be applied.
