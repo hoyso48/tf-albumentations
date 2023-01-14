@@ -584,7 +584,7 @@ def scale_(image, mask=None, objects=None,
     output_width = crop_width
 
 #   scale = 1./scale
-  scale_x = tf.math.sqrt(scale*aspect_ratio)
+  scale_x = scale*aspect_ratio
   scale_y = scale_x/aspect_ratio
   scale_x = tf.cast(image_width/crop_width,tf.float32)*scale_x
   scale_y = tf.cast(image_height/crop_height,tf.float32)*scale_y
