@@ -5,12 +5,12 @@ from tf_albumentations.transforms import *
 _MAX_LEVEL = 10.
 
 class config_autoaug:
-    cutout_const=200
+    cutout_const=200#100
     translate_const=1#250
     replace=[128,128,128]
 
 class config_randaug:
-    cutout_const=80
+    cutout_const=80#40
     translate_const=0.4#100
     replace=[128,128,128]
 
