@@ -62,7 +62,7 @@ def tf_random_choice(a, size, with_replacement=True, p=None):
             idxs = tf.searchsorted(cum_dist, unif_samp)
     else:
         assert size <= len(a)
-        if p is None:
+        if p is None or size==len(a):
             idxs = tf.random.shuffle(tf.range(len(a)))[:size]
         else:
             p = tf.cast(p/tf.reduce_sum(tf.cast(p, tf.float32)), tf.float32)
