@@ -115,7 +115,7 @@ def AutoAugment(policies = policy_v0(), config = config_autoaug):
       op = eval(subpolicy)(p=prob, **args)
       SUB_POLICY.append(op)
     POLICY.append(Sequence(SUB_POLICY, p=1))
-  return Sequence([HorizontalFlip(p=0.5), Choice(POLICY, p=1, n=1)])
+  return Choice(POLICY, p=1, n=1)
 
 available_ops = [
     'AutoContrast', 'Equalize', 'Invert', 'Rotate', 'Posterize',
@@ -138,4 +138,4 @@ def RandAugment(available_ops=available_ops, magnitude=10, n_layers=2, config=co
     args = level_to_arg(config)[subpolicy](level=magnitude)
     op = eval(subpolicy)(p=1, **args)
     POLICY.append(op)
-  return Sequence([HorizontalFlip(p=0.5), Choice(POLICY, p=1, n=n_layers, with_replacement=True)])
+  return Choice(POLICY, p=1, n=n_layers, with_replacement=True)
