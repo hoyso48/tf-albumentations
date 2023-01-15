@@ -652,9 +652,9 @@ def ColorJitter(p=0.5, hue=(-0.05,0.05), brightness=(0.8,1.2), saturation=(0.7,1
                  ], p=p, n=4, with_replacement=False)
 
 def RandomAffine(p=0.5, rotate=(-45,45), shear=(-0.15,0.15), translate=(-0.05,0.05), replace=0):
-    return A.Choice([A.Rotate(p=1,degrees=rotate,replace=replace), 
-                     A.Shear(p=1,level=shear,replace=replace), 
-                     A.Translate(p=1,level=translate,replace=replace)], p=p, with_replacement=False, n=3)
+    return Choice([Rotate(p=1,degrees=rotate,replace=replace), 
+                   Shear(p=1,level=shear,replace=replace), 
+                   Translate(p=1,level=translate,replace=replace)], p=p, with_replacement=False, n=3)
   
 def JitterV2(p=0.5, level=1, color=True, affine=True, replace=0):
     #inspired from simclr-v2 augmentation
@@ -670,5 +670,5 @@ def JitterV2(p=0.5, level=1, color=True, affine=True, replace=0):
                                  rotate=(-40*level,40*level),
                                  shear=(-0.4*level,0.4*level),
                                  translate=(-0.2*level,0.2*level), replace=replace))
-    return A.Sequence(policy, p=1)
+    return Sequence(policy, p=1)
   
