@@ -546,11 +546,13 @@ def shear_y(image, mask, objects, level, replace=0):
 #     objects = B.scale_bboxes(objects, scale, scale, box_offset_y, box_offset_x)
 #   return image, mask, objects
 
+  
+
 def scale_image(image, scale_y, scale_x, offset_y, offset_x):
   '''
   scale base op
   offset: top_left point of crop/pad.
-  offset must be -1<offset<0 if scale > 1, elif scale < 1: 0<offset<1, else 0
+  offset must be -1<offset<0 if scale > 1, 0<offset<1 elif scale < 1,  else 0
   output: scaled image(with different shape)
   '''
   image_height = tf.shape(image)[0]
@@ -563,12 +565,36 @@ def scale_image(image, scale_y, scale_x, offset_y, offset_x):
   image = tf.pad(image, [[tf.maximum(-offset_y,0),tf.maximum(resize_h-image_height+offset_y,0)],[tf.maximum(-offset_x,0),tf.maximum(resize_w-image_width+offset_x,0)],[0,0]])
   return image
 
+
+def random_resized_crop(image, mask=None, objects=None,
+                        aspect_ratio_range=(0.75,1.3333333333),
+                        area_range=(0.08,1.0)):
+  shape = tf.shape(image)
+  begin, size, _ = tf.image.sample_distorted_bounding_box(shape,
+                                                          tf.zeros([0, 0, 4], tf.float32),
+                                                          area_range=area_range,
+                                                          use_image_if_no_bounding_boxes=True)
+  offset_y = begin[0]/shape[0]
+  offset_x = begin[1]/shape[1]
+  scale_y = size[0]/shape[0]
+  scale_x = size[1]/shape[1]
+  image = scale_image(image, scale_y, scale_x, offset_y, offset_x)
+  #we don't need to wrap image as we only use crop
+  image = tf.cast(tf.image.resize(image, shape[:2], method=_IMAGE_INTERPOLATION), image.dtype)
+  if mask is not None:
+    mask_shape = tf.shape(mask)
+    mask = scale_image(mask, scale_y, scale_x, offset_y, offset_x)
+    mask = tf.cast(tf.image.resize(mask, mask_shape[:2], method=_MASK_INTERPOLATION), mask.dtype)
+  if objects is not None:
+    objects = B.scale_bboxes(objects, scale_y, scale_x, offset_y, offset_x)
+  return image, mask, objects
+
 def scale_(image, mask=None, objects=None,
                 scale=0.7,
                 #  use_bbox_prob=CFG.use_bbox_prob,
                 #  use_mask_prob=0,
                 #  min_object_covered=0.1,
-                aspect_ratio=1.,
+                #  aspect_ratio=1.,
                 centered=False,
                 crop_size=None,
                 output_size=None,
@@ -590,8 +616,9 @@ def scale_(image, mask=None, objects=None,
     output_width = crop_width
 
 #   scale = 1./scale
-  scale_x = scale*aspect_ratio
-  scale_y = scale_x/aspect_ratio
+#   scale_x = scale*aspect_ratio
+#   scale_y = scale_x/aspect_ratio
+  scale_x = scale_y = scale
   scale_x = tf.cast(image_width/crop_width,tf.float32)*scale_x
   scale_y = tf.cast(image_height/crop_height,tf.float32)*scale_y
 
@@ -647,8 +674,6 @@ def flip_up_down(image, mask, objects):
   if objects is not None:
     objects = B.flip_up_down_bboxes(objects)
   return image, mask, objects
-
-
 
 
 ################################
