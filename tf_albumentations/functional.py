@@ -567,8 +567,8 @@ def scale_image(image, scale_y, scale_x, offset_y, offset_x):
 
 
 def random_resized_crop(image, mask=None, objects=None,
-                        aspect_ratio_range=(0.75,1.3333333333),
-                        area_range=(0.08,1.0)):
+                        area_range=(0.08,1.0),
+                        aspect_ratio_range=(0.75,1.3333333333)):
   shape = tf.shape(image)
   begin, size, _ = tf.image.sample_distorted_bounding_box(shape,
                                                           tf.zeros([0, 0, 4], tf.float32),
