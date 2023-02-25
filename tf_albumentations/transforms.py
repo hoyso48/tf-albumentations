@@ -536,24 +536,38 @@ class TranslateY(Transform):
 #             'replace':self.replace
 #         }
       
+class RandomResizedCrop(Transform):
+    def __init__(self, p=0.5, area_range=(0.08,1.0), aspect_ratio_range=(0.75,1.3333333)):
+        self.p = p
+        self.area_range = area_range
+        self.aspect_ratio_range = aspect_ratio_range
+
+    def apply(self, image, mask, objects, area_range, aspect_ratio_range):
+        image, mask, objects = F.random_resized_crop(image, mask, objects, area_range, aspect_ratio_range)
+        return {'image':image, 'mask':mask, 'objects':objects}
+
+    def get_params(self):
+        return {
+            'area_range':self.area_range,
+            'aspect_ratio_range':self.aspect_ratio_range,
+        }
+
 class Scale(Transform):
-    def __init__(self, p=0.5, scale=(0.7,1.33), aspect_ratio=(0.7,1.33), centered=False, crop_size=None, output_size=None, replace=0):
+    def __init__(self, p=0.5, scale=(0.7,1.3), centered=False, crop_size=None, output_size=None, replace=0):
         self.p = p
         self.scale = scale
         self.crop_size = crop_size
         self.output_size = output_size
-        self.aspect_ratio = aspect_ratio
         self.centered = centered
         self.replace = replace
 
-    def apply(self, image, mask, objects, scale, aspect_ratio, centered, crop_size, output_size, replace):
-        image, mask, objects = F.scale_(image, mask, objects, scale, aspect_ratio, centered, crop_size, output_size, replace)
+    def apply(self, image, mask, objects, scale, centered, crop_size, output_size, replace):
+        image, mask, objects = F.scale_(image, mask, objects, scale, centered, crop_size, output_size, replace)
         return {'image':image, 'mask':mask, 'objects':objects}
 
     def get_params(self):
         return {
             'scale':_parse_arg(self.scale),
-            'aspect_ratio':_parse_arg(self.aspect_ratio),
             'centered':self.centered,
             'output_size':self.output_size,
             'crop_size':self.crop_size,
